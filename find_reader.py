@@ -5,7 +5,7 @@
 READER_VID = 0x0acd
 READER_PID = 0x0500
 
-from gi.repository import GUdev
+import pyudev
 import binascii
 import os
 import sys
@@ -135,14 +135,14 @@ def decode_raw_hexstring(hexstring):
 def find_device_for_usb_vidpid(subsys, vid, pid):
     vidstr = '%04x' % (vid,)
     pidstr = '%04x' % (pid,)
-    udev = GUdev.Client()
-    for dev in udev.query_by_subsystem(subsys):
-        usbdev = dev.get_parent_with_subsystem('usb', 'usb_device')
+    udev = pyudev.Context()
+    for dev in udev.list_devices(subsystem=subsys):
+        usbdev = dev.find_parent('usb', 'usb_device')
         # HID devices can be other things than USB...
         if usbdev is None:
             continue
-        if usbdev.get_sysfs_attr('idVendor') == vidstr and usbdev.get_sysfs_attr('idProduct') == pidstr:
-            return dev.get_device_file()
+        if usbdev.attributes.asstring('idVendor') == vidstr and usbdev.attributes.asstring('idProduct') == pidstr:
+            return dev.device_node
     return None
 
 
