@@ -1,0 +1,11 @@
+[Unit]
+Description=Door swipe processing daemon
+After=syslog.target gpiod.service
+Wants=gpiod.service
+
+[Service]
+ExecStart=/home/localadmin/reader/swiped.py
+Type=simple
+
+[Install]
+WantedBy=multi-user.target
