@@ -1,0 +1,10 @@
+[Unit]
+Description=Door GPIO management daemon
+After=syslog.target
+
+[Service]
+ExecStart=/home/localadmin/reader/gpiod.py
+Type=simple
+
+[Install]
+WantedBy=multi-user.target
