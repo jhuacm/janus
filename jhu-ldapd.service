@@ -1,0 +1,10 @@
+[Unit]
+Description=JHU LDAP query agent
+After=syslog.target
+
+[Service]
+ExecStart=/home/localadmin/reader/jhu-ldapd.py
+Type=simple
+
+[Install]
+WantedBy=multi-user.target

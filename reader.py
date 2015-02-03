@@ -1,14 +1,11 @@
 #!/usr/bin/python3
 
-# We find a hidraw device for this USB VID:PID pair
-# and read card swipe data from it.
-READER_VID = 0x0acd
-READER_PID = 0x0500
-
-import pyudev
 import binascii
 import os
 import sys
+
+from devfind import find_device_for_usb_vidpid
+
 
 class BitArray(object):
     def __init__(self, initial_content=b''):
@@ -130,23 +127,10 @@ def decode_raw_hexstring(hexstring):
     return data
 
 
-# Ask udev which USB device each device of the given subsystem came from
-# so we can find the one we want.
-def find_device_for_usb_vidpid(subsys, vid, pid):
-    vidstr = '%04x' % (vid,)
-    pidstr = '%04x' % (pid,)
-    udev = pyudev.Context()
-    for dev in udev.list_devices(subsystem=subsys):
-        usbdev = dev.find_parent('usb', 'usb_device')
-        # HID devices can be other things than USB...
-        if usbdev is None:
-            continue
-        if usbdev.attributes.asstring('idVendor') == vidstr and usbdev.attributes.asstring('idProduct') == pidstr:
-            return dev.device_node
-    return None
-
-
 class IDTechHIDReader(object):
+    READER_VID = 0x0acd
+    READER_PID = 0x0500
+
     def __init__(self, devpath):
         self._fd = os.open(devpath, os.O_RDONLY)
 
@@ -166,9 +150,13 @@ class IDTechHIDReader(object):
         rawstrings = [hidblob[offset:offset+length] for offset, length in zip(offsets, lengths)]
         return tuple(map(decode_raw_hexstring, rawstrings))
 
+    @classmethod
+    def find(cls):
+        return find_device_for_usb_vidpid('hidraw', cls.READER_VID, cls.READER_PID)
+
 
 if __name__ == '__main__':
-    devfile = find_device_for_usb_vidpid('hidraw', READER_VID, READER_PID)
+    devfile = IDTechHIDReader.find()
     if devfile is None:
         sys.stderr.write('Unable to find the card reader.\n')
         sys.exit(1)
