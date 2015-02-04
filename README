@@ -1,0 +1,10 @@
+gpiod should be run as root.
+swiped should not.
+Privilege separation is a wonderful thing.
+
+There's a binary of rpi.gpio just placed here until there's Debian
+packaging for it in Debian. We can't just use the sysfs interface
+because it doesn't support setting the necessary pullup resistor on
+the door sense line.
+
+The reader is autodetected using udev.
