@@ -4,6 +4,7 @@ import asyncio
 import ldap3
 import socket
 import os
+from dns import resolver
 from syslog import syslog
 
 BASE_DN = 'ou=PEOPLE,dc=win,dc=ad,dc=jhu,dc=edu'
@@ -12,33 +13,35 @@ with open("/home/localadmin/reader/jhu-acmjanus.password") as pwf :
   global PASSWORD
   PASSWORD = pwf.readline().rstrip()
 
-### XXX SRV record?
-conn = ldap3.Connection(
-       [ ldap3.Server('esgwinbv4.win.ad.jhu.edu' , use_ssl = True)
-       , ldap3.Server('esgwineb1.win.ad.jhu.edu' , use_ssl = True)
-       , ldap3.Server('esgwineb2.win.ad.jhu.edu' , use_ssl = True)
-       , ldap3.Server('esgwinhc2.win.ad.jhu.edu' , use_ssl = True)
-       , ldap3.Server('esgwinach4.win.ad.jhu.edu', use_ssl = True)
-       ], lazy=True,
-          user='acmjanus@WIN.AD.JHU.EDU',
-          password=PASSWORD,
-          auto_bind=True)
+def searchLDAP(*ap, **akw) :
+  # syslog("Making LDAP query %r %r" % (ap, akw))
+
+  dnsAnswer = resolver.query('_ldap._tcp.win.ad.jhu.edu', 'SRV')
+  servers = [ str(rr.target) for rr in dnsAnswer ]
+
+  for server in servers :
+    try :
+      # syslog("Trying server %s" % server)
+      conn = ldap3.Connection( ldap3.Server(server, use_ssl = True, connect_timeout = 5)
+                             , user='acmjanus@WIN.AD.JHU.EDU', password=PASSWORD
+                             )
+      conn.bind()
+      conn.search(*ap, **akw)
+      res = conn.response
+      # syslog ("Returning: %r" % res)
+      conn.unbind()
+      return res
+    except ldap3.LDAPException as e :
+      syslog("Server %s threw exception %r" % (server,e))
+      pass
+
+  raise EnvironmentError("No LDAP servers reachable") 
 
 def lookup_hash(cstr):
-    with conn:
-        conn.search(BASE_DN,
-            '(johnshopkinseduhmwbadge='+cstr+')',
-            ldap3.SEARCH_SCOPE_SINGLE_LEVEL,
-            attributes=["ou","eduPersonAffiliation"]);
-        return conn.response
+  return searchLDAP(BASE_DN, '(johnshopkinseduhmwbadge='+cstr+')', ldap3.SEARCH_SCOPE_SINGLE_LEVEL, attributes=["ou","eduPersonAffiliation"])
 
 def lookup_jhed_jcard(jstr):
-    with conn:
-        conn.search(BASE_DN,
-            '(cn='+jstr+')',
-            ldap3.SEARCH_SCOPE_SINGLE_LEVEL,
-            attributes=["ou","eduPersonAffiliation","johnshopkinseduhmwbadge"])
-        return conn.response
+  return searchLDAP(BASE_DN, '(cn='+jstr+')', ldap3.SEARCH_SCOPE_SINGLE_LEVEL, attributes=["ou","eduPersonAffiliation","johnshopkinseduhmwbadge"])
 
 def attr_contains(res,ix,val) :
     return list(map(lambda x:x.lower(), res["attributes"][ix])).index(val)
