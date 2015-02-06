@@ -6,6 +6,7 @@ Wants=gpiod.service
 [Service]
 ExecStart=/home/localadmin/reader/swiped.py
 Type=simple
+Restart=always
 
 [Install]
 WantedBy=multi-user.target

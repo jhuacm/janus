@@ -62,15 +62,23 @@ methods = [ lambda stripe : try_us(hash_stripe(mangle_stripe(stripe)))
           ]
 
 while True:
-    stripe = ''.join(t for t in reader.read_card() if t is not None)
+    stripe = ''
+    try :
+      stripe = ''.join(t for t in reader.read_card() if t is not None)
+    except binascii.Error as e:
+      syslog('Dubious card read: %r' % e)
+      continue
 
     if len(stripe) == 0 : continue
 
     for method in methods :
-        res = method(stripe)
-        if res is not None :
-            syslog('Door opened by card swipe (%s)' % res)
-            open_door()
-            break
+        try :
+          res = method(stripe)
+          if res is not None :
+              syslog('Door opened by card swipe (%s)' % res)
+              open_door()
+              break
+        except Exception as e :
+              syslog('Trying next method because exception: %r' % e)
     else:
         syslog('Unknown card read: (%r)' % stripe)

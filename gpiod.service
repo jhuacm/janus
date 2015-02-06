@@ -5,6 +5,7 @@ After=syslog.target
 [Service]
 ExecStart=/home/localadmin/reader/gpiod.py
 Type=simple
+Restart=always
 
 [Install]
 WantedBy=multi-user.target

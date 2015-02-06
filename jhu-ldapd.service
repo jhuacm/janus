@@ -5,6 +5,7 @@ After=syslog.target
 [Service]
 ExecStart=/home/localadmin/reader/jhu-ldapd.py
 Type=simple
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
