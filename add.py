@@ -11,7 +11,12 @@ import socket
 from syslog import syslog
 
 def display_ldif(acmid, stripe):
-    print ("dn: cn=%s,dc=acm,dc=jhu,dc=edu" % acmid)
+    print ("dn: uid=%s,ou=People,dc=acm,dc=jhu,dc=edu" % acmid)
+    print ("changetype: modify")
+    print ("add: objectClass")
+    print ("objectClass: jhuacmDoorMixin")
+    print ("")
+    print ("dn: uid=%s,ou=People,dc=acm,dc=jhu,dc=edu" % acmid)
     print ("changetype: modify")
     print ("add: jhuacmDoorCard")
     print ("jhuacmDoorCard: %s" % b64encode(hash_stripe(stripe)))
@@ -39,7 +44,7 @@ def docard(acmid, stripe):
 
 def main():
   parser = argparse.ArgumentParser(description='Construct LDIF to add jcards')
-  parser.add_argument('acm', metavar='acmid', nargs=1, help='ACM user ID')
+  parser.add_argument('acm', metavar='acmid', help='ACM user ID')
   parser.add_argument('--jhed', metavar='jhedid', nargs=1, help='JHED ID')
   parser.add_argument('--card', metavar='card read string', nargs=1, help='card read')
   args = parser.parse_args()
