@@ -19,7 +19,7 @@ def display_ldif(acmid, stripe):
     print ("dn: uid=%s,ou=People,dc=acm,dc=jhu,dc=edu" % acmid)
     print ("changetype: modify")
     print ("add: jhuacmDoorCard")
-    print ("jhuacmDoorCard: %s" % b64encode(hash_stripe(stripe)))
+    print ("jhuacmDoorCard: %s" % b64encode(hash_stripe(stripe)).decode())
 
 def lookup_jhed(jhed):
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
