@@ -42,10 +42,14 @@ def try_jhed(stripe):
         return None
 
 def try_us(hash) :
+    syslog("Trying card against ACM DB with stripe %s" % stripe)
+
     res = lookup_hash(hash)
     if len(res) == 0 :
+        syslog("Trying card against ACM DB with stripe %s got no answer" % stripe)
         return None
     else :
+        syslog("Trying card against ACM DB with stripe %s got result %s" % (stripe, res[0]['dn']))
         return res[0]['dn']
 
 def open_door():
