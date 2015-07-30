@@ -4,6 +4,10 @@ from reader import IDTechHIDReader
 from hash import hash_stripe
 from ldapbackend import lookup_hash
 
+# Put the actual open-door method in a separate file so it can be imported.
+# -Ben Rosser
+from swipedlib import open_door
+
 import re
 import sys
 from select import select
@@ -51,11 +55,6 @@ def try_us(hash) :
     else :
         syslog("Trying card against ACM DB with stripe %s got result %s" % (stripe, res[0]['dn']))
         return res[0]['dn']
-
-def open_door():
-    s = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-    s.sendto(b'OPEN', '/run/gpiod.socket')
-    s.close()
 
 def mangle_stripe(stripe):
     return re.sub(r'\d\?', '0?', stripe, count=1)
