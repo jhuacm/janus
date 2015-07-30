@@ -21,14 +21,14 @@ def searchLDAP(*ap, **akw) :
 
   for server in servers :
     try :
-      # syslog("Trying server %s" % server)
+      syslog("Trying server %s" % server)
       conn = ldap3.Connection( ldap3.Server(server, use_ssl = True, connect_timeout = 5)
                              , user='acmjanus@WIN.AD.JHU.EDU', password=PASSWORD
                              )
       conn.bind()
       conn.search(*ap, **akw)
       res = conn.response
-      # syslog ("Returning: %r" % res)
+      syslog ("Returning: %r" % res)
       conn.unbind()
       return res
     except ldap3.LDAPException as e :
@@ -44,31 +44,24 @@ def lookup_jhed_jcard(jstr):
   return searchLDAP(BASE_DN, '(cn='+jstr+')', ldap3.SEARCH_SCOPE_SINGLE_LEVEL, attributes=["ou","eduPersonAffiliation","johnshopkinseduhmwbadge"])
 
 def attr_contains(res,ix,val) :
-    return list(map(lambda x:x.lower(), res["attributes"][ix])).index(val)
+    try :
+        list(map(lambda x:x.lower(), res["attributes"][ix])).index(val)
+	return True
+    except Exception as e:
+        syslog ("... exception while validating: '%r'" % e)
+    return False
 
 ### XXX Policy?
 def is_allowed(res) :
     # Are they comp sci?
-    try :
-        attr_contains(res, "ou", "computer science")
-        return True
-    except Exception as e:
-        syslog ("... exception while validating: '%r'" % e)
-
+    if attr_contains(res, "ou", "computer science") :
+        return true
     # Are they custodial?
-    try :
-        attr_contains(res, "ou", "custodial services")
+    if attr_contains(res, "ou", "custodial services") :
         return True
-    except Exception as e:
-        syslog ("... exception while validating: '%r'" % e)
-
     # Are they staff?
-    try :
-        attr_contains(res, "eduPersonAffiliation", "staff")
+    if attr_contains(res, "eduPersonAffiliation", "staff") :
         return True
-    except Exception as e:
-        syslog ("... exception while validating: '%r'" % e)
-
     return False
 
 @asyncio.coroutine
@@ -91,12 +84,11 @@ def handle_conn(reader, writer):
                     udec = splmsg[1].strip();
                     syslog ("Lookup of JHED %s..." % udec)
                     res = lookup_jhed_jcard(udec)[0];
-                    writer.write(
-                       ("JHED %s %s\n" %
-                                ( udec
-                                , res["attributes"]["johnshopkinseduhmwbadge"][0]
-                                )
-                        ).encode())
+                    tup = ( udec
+                          , res["attributes"]["johnshopkinseduhmwbadge"][0]
+                          )
+                    syslog ("JHED %s result %s" % tup )
+                    writer.write(("JHED %s %s\n" % tup).encode())
                 except Exception as e:
                     syslog ("Exception while looking up JHED %s: %r" % (udec, e))
                     try :
@@ -110,8 +102,10 @@ def handle_conn(reader, writer):
                     syslog ("Lookup of card %s..." % udec)
                     res = lookup_hash(udec)[0];
                     if is_allowed(res) :
+                        syslog ("Lookup of card %s ISOK" % udec)
                         writer.write(("ISOK %s\n" % res["dn"]).encode())
                     else :
+                        syslog ("Lookup of card %s DENY" % udec)
                         writer.write(("DENY %s\n" % res["dn"]).encode())
                 except Exception as e:
                     syslog ("Exception while looking up %s: %r" % (udec, e))
@@ -122,6 +116,7 @@ def handle_conn(reader, writer):
                         pass
             else:
                 try :
+                   syslog ("Unknown command from %r: %s" % (addr, message))
                    writer.write(("UNKC: %s\n" % message).encode())
                 except Exception :
                    syslog ("Exception while failing %s: %r" % (addr, e))
