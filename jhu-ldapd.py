@@ -46,7 +46,7 @@ def lookup_jhed_jcard(jstr):
 def attr_contains(res,ix,val) :
     try :
         list(map(lambda x:x.lower(), res["attributes"][ix])).index(val)
-	return True
+        return True
     except Exception as e:
         syslog ("... exception while validating: '%r'" % e)
     return False
@@ -55,7 +55,7 @@ def attr_contains(res,ix,val) :
 def is_allowed(res) :
     # Are they comp sci?
     if attr_contains(res, "ou", "computer science") :
-        return true
+        return True
     # Are they custodial?
     if attr_contains(res, "ou", "custodial services") :
         return True
