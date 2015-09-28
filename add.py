@@ -4,6 +4,7 @@ from hash import hash_stripe
 from base64 import b64encode
 import argparse
 
+import datetime
 import re
 import sys
 from select import select
@@ -19,7 +20,10 @@ def display_ldif(acmid, stripe):
     print ("dn: uid=%s,ou=People,dc=acm,dc=jhu,dc=edu" % acmid)
     print ("changetype: modify")
     print ("add: jhuacmDoorCard")
-    print ("jhuacmDoorCard: %s" % b64encode(hash_stripe(stripe)).decode())
+    doorcard = b64encode(hash_stripe(stripe)).decode()
+    print ("jhuacmDoorCard: %s" % doorcard)
+    print ("add: jhuacmDoorCardComment")
+    print ("jhuacmDoorCardComment: %s... added %s" % (doorcard[:3], datetime.date.today().isoformat()))
 
 def lookup_jhed(jhed):
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:

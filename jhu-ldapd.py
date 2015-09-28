@@ -53,9 +53,9 @@ def attr_contains(res,ix,val) :
 
 ### XXX Policy?
 def is_allowed(res) :
-    # Are they comp sci?
-    if attr_contains(res, "ou", "computer science") :
-        return True
+    # Are they comp sci? Then don't let them in.
+#    if attr_contains(res, "ou", "computer science") :
+#        return True
     # Are they custodial?
     if attr_contains(res, "ou", "custodial services") :
         return True
