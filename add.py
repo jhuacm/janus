@@ -22,8 +22,8 @@ def display_ldif(acmid, stripe):
     print ("add: jhuacmDoorCard")
     doorcard = b64encode(hash_stripe(stripe)).decode()
     print ("jhuacmDoorCard: %s" % doorcard)
-    print ("add: jhuacmDoorCardComment")
-    print ("jhuacmDoorCardComment: %s... added %s" % (doorcard[:3], datetime.date.today().isoformat()))
+#    print ("add: jhuacmDoorCardComment")
+#    print ("jhuacmDoorCardComment: %s... added %s" % (doorcard[:3], datetime.date.today().isoformat()))
 
 def lookup_jhed(jhed):
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
