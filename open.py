@@ -5,8 +5,14 @@
 
 import swipedlib
 
+import sys
+
 import syslog
 
 if __name__ == '__main__':
 	syslog.syslog('Door opened manually by script.')
-	swipedlib.open_door()
+	try:
+		message = sys.argv[1]
+	except IndexError:
+		message = 'automated script'
+	swipedlib.open_door(message)

@@ -79,7 +79,7 @@ while True:
           res = method(stripe)
           if res is not None :
               syslog('Door opened by card swipe (%s)' % res)
-              open_door()
+              open_door(res)
               break
         except Exception as e :
               syslog('Trying next method because exception: %r' % e)
