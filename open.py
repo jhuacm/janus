@@ -5,8 +5,8 @@
 
 import swipedlib
 
+import os
 import sys
-
 import syslog
 
 if __name__ == '__main__':
@@ -15,4 +15,7 @@ if __name__ == '__main__':
 		message = sys.argv[1]
 	except IndexError:
 		message = 'automated script'
+		remoteUser = os.getenv("REMOTE_USER")
+		if remoteUser is not None:
+			message += ' ran by ' + str(remoteUser)
 	swipedlib.open_door(message)
