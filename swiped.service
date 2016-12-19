@@ -1,6 +1,6 @@
 [Unit]
 Description=Door swipe processing daemon
-After=syslog.target gpiod.service
+After=syslog.target gpiod.service acm-contactless.service
 Wants=gpiod.service
 
 [Service]

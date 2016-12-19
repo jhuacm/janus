@@ -11,6 +11,9 @@ _secret = b64decode(open(_secret_file, 'rb').read())
 def hash_stripe(stripe):
     return hashlib.pbkdf2_hmac('sha1', stripe.encode(), _secret, 1000, 32)
 
+def hash_tag_id(tag_id):
+    return hashlib.pbkdf2_hmac('sha1', tag_id, _secret, 1000, 32)
+
 if __name__ == '__main__':
     try:
         while True:
