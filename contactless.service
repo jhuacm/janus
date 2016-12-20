@@ -1,10 +1,10 @@
 [Unit]
-Description=Door swipe processing daemon
+Description=Door contactless card processing daemon
 After=syslog.target gpiod.service
 Wants=gpiod.service
 
 [Service]
-ExecStart=/home/localadmin/reader/swiped.sh
+ExecStart=/home/localadmin/reader/contactless.sh
 Type=simple
 Restart=always
 

@@ -7,10 +7,10 @@ import socket
 from select import select
 from syslog import syslog
 import time
+from config import OPEN_SECONDS
 
 RELAY_GPIO = 4
 SENSOR_GPIO = 25
-OPEN_SECONDS = 5.0
 LISTENING_SOCKET = '/run/gpiod.socket'
 
 close_time = None
