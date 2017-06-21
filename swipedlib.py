@@ -6,7 +6,7 @@
 
 import os
 import socket
-
+import subprocess
 #import remctl
 
 def open_door(message=''):
@@ -17,8 +17,7 @@ def open_door(message=''):
     # why is remctl in python2 and not python3 yet. :'(
     # anyway, use os.system or something for now...
     if message != '':
-        message = '"' + message + '"'
-        os.system('k5start -f /etc/krb5.keytab -U -t -- /home/localadmin/reader/python2_remctl_script.py ' + str(message))
+        os.system('timeout 1s k5start -f /etc/krb5.keytab -U -t -- /home/localadmin/reader/python2_remctl_script.py ' + str(message))
 #    if message != '':
 #        command = ('announce', 'door', message)
 #        object = remctl.Remctl(remctlHost, 4373, 'host/hermes.vm.acm.jhu.edu')
