@@ -68,9 +68,16 @@ def is_allowed(res) :
 def handle_conn(reader, writer):
     try:
         while True:
-            data = yield from reader.readline()
+            data = ''
+
+            try :
+                data = yield from reader.readline()
+            except BrokenPipeError :
+                break
+
             if len(data) == 0 :
                 break
+
             msg = data.decode()
             addr = writer.get_extra_info('peername')
 
@@ -93,7 +100,7 @@ def handle_conn(reader, writer):
                     syslog ("Exception while looking up JHED %s: %r" % (udec, e))
                     try :
                         writer.write("CEXN\n", addr)
-                    except Exception :
+                    except Exception as e :
                         syslog ("Exception while writing exception to %s: %r" % (addr, e))
                         pass
             elif cmd == "LOOK" :
@@ -111,18 +118,21 @@ def handle_conn(reader, writer):
                     syslog ("Exception while looking up %s: %r" % (udec, e))
                     try :
                         writer.write(("CEXN: %r\n" % e).encode())
-                    except Exception :
+                    except Exception as e :
                         syslog ("Exception while writing exception to %s: %r" % (addr, e))
                         pass
             else:
                 try :
-                   syslog ("Unknown command from %r: %s" % (addr, message))
-                   writer.write(("UNKC: %s\n" % message).encode())
-                except Exception :
+                   syslog ("Unknown command from %r: %s" % (addr, msg))
+                   writer.write(("UNKC: %s\n" % msg).encode())
+                except Exception as e :
                    syslog ("Exception while failing %s: %r" % (addr, e))
                    pass
 
-            yield from writer.drain()
+            try:
+                yield from writer.drain()
+            except Exception :
+                pass
     finally:
         writer.close()
 

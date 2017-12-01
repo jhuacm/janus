@@ -40,7 +40,7 @@ def try_jhed(stripe):
       if ret[0] == "ISOK" :
         return ret[1].strip()
       elif ret[0] == "DENY" :
-        syslog("Entry found in JHED but is denied: %s", ret[1]);
+        syslog("Entry found in JHED but is denied: %s" % ret[1].strip());
         return None
       else :
         return None
@@ -74,11 +74,11 @@ while True:
 
     if len(stripe) == 0 : continue
 
-    for method in methods :
+    for method in methods:
         try :
           res = method(stripe)
           if res is not None :
-              syslog('Door opened by card swipe (%s)' % res)
+              syslog('Door opened by card swipe (%r)' % res)
               open_door(res)
               break
         except Exception as e :
